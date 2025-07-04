@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: speak
+      POSTGRES_PASSWORD: speakpass
+      POSTGRES_DB: speaktrainer
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  speaktrainer:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://speak:speakpass@db:5432/speaktrainer
+      TEST_DATABASE_URL: postgresql+asyncpg://speak:speakpass@db:5432/speaktrainer
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  test:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://speak:speakpass@db:5432/speaktrainer
+      TEST_DATABASE_URL: postgresql+asyncpg://speak:speakpass@db:5432/speaktrainer
+    volumes:
+      - .:/app
+    command: >
+      sh -c "pytest"
+
+volumes:
+  pgdata:

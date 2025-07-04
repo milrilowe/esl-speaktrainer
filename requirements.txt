@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+asyncpg
+alembic
+faster-whisper
+python-multipart
+soundfile
+pytest
+pytest-asyncio
+httpx
+python-dotenv
+aiosqlite
