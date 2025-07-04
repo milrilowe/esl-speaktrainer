@@ -1,5 +1,5 @@
-from app.database import Base, engine, AsyncSessionLocal
-from app.models import Prompt
+from database import Base, engine, AsyncSessionLocal
+from models import Prompt
 import asyncio
 from uuid import uuid4
 

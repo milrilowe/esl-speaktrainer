@@ -1,7 +1,7 @@
 from faster_whisper import WhisperModel
 import soundfile as sf
 import subprocess
-from app.utils import diff_phonemes
+from utils import diff_phonemes
 
 model = WhisperModel("base", compute_type="int8")
 
