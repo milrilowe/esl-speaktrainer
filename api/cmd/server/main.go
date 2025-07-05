@@ -40,6 +40,13 @@ func main() {
 	promptService := services.NewPromptService(db)
 	sessionService := services.NewSessionService(db, mlClient)
 
+	// Seed database with initial prompts
+	if err := promptService.SeedPrompts(); err != nil {
+		log.Printf("Warning: Failed to seed prompts: %v", err)
+	} else {
+		log.Println("Database seeded successfully")
+	}
+
 	// Initialize handlers
 	promptHandler := handlers.NewPromptHandler(promptService)
 	sessionHandler := handlers.NewSessionHandler(sessionService)
@@ -108,15 +115,24 @@ func setupRouter(
 	// API routes
 	api := router.Group("/api")
 	{
-		// Prompts
-		api.GET("/prompts", promptHandler.GetAllPrompts)
-		api.GET("/prompts/random", promptHandler.GetRandomPrompt)
-		api.GET("/prompts/:id", promptHandler.GetPrompt)
+		// Prompts - Full CRUD
+		prompts := api.Group("/prompts")
+		{
+			prompts.GET("", promptHandler.GetAllPrompts)
+			prompts.POST("", promptHandler.CreatePrompt)
+			prompts.GET("/random", promptHandler.GetRandomPrompt)
+			prompts.GET("/:id", promptHandler.GetPrompt)
+			prompts.PUT("/:id", promptHandler.UpdatePrompt)
+			prompts.DELETE("/:id", promptHandler.DeletePrompt)
+		}
 
 		// Sessions
-		api.POST("/sessions/analyze", sessionHandler.AnalyzePronunciation)
-		api.GET("/sessions/:id", sessionHandler.GetSession)
-		api.GET("/sessions", sessionHandler.GetSessions)
+		sessions := api.Group("/sessions")
+		{
+			sessions.POST("/analyze", sessionHandler.AnalyzePronunciation)
+			sessions.GET("/:id", sessionHandler.GetSession)
+			sessions.GET("", sessionHandler.GetSessions)
+		}
 	}
 
 	return router

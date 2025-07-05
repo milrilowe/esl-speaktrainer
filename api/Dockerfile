@@ -15,7 +15,7 @@ RUN go build -o main cmd/server/main.go
 # Final stage
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates curl
+RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 # Copy the binary from builder stage

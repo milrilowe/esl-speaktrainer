@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"speaktrainer-api/internal/models"
 )
@@ -56,7 +57,7 @@ func (s *SessionService) AnalyzePronunciation(req CreateSessionRequest) (*Sessio
 
 	// 3. Create session record
 	session := &models.Session{
-		ID:            generateID(),
+		ID:            uuid.New().String(),
 		PromptID:      req.PromptID,
 		UserID:        req.UserID,
 		Transcription: analysisResp.Transcription,

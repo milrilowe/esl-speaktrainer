@@ -16,34 +16,37 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8001:8001"
-    volumes:
-      - ./ml/src:/app/src
     environment:
       - ENVIRONMENT=development
       - DEBUG=true
       - LOG_LEVEL=INFO
 
   api:
-    build: ./api
+    build: 
+      context: ./api
+      dockerfile: Dockerfile
     depends_on:
       - db
       - ml-service
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://speak:speakpass@db:5432/speaktrainer
+      DATABASE_URL: postgresql://speak:speakpass@db:5432/speaktrainer?sslmode=disable
       ML_SERVICE_URL: http://ml-service:8001
       ENVIRONMENT: development
+      DEBUG: "true"
       CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
 
-  web:
-    build: ./web
-    depends_on:
-      - api
-    ports:
-      - "3000:80"
-    environment:
-      VITE_API_URL: http://localhost:8000
+  # Optional: Run web in Docker too, but for development use pnpm dev
+  # web:
+  #   build: ./web
+  #   depends_on:
+  #     api:
+  #       condition: service_healthy
+  #   ports:
+  #     - "3000:80"
+  #   environment:
+  #     VITE_API_URL: http://localhost:8000
 
 volumes:
   pgdata:

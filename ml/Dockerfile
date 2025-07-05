@@ -1,5 +1,6 @@
 FROM python:3.10-slim
 
+# Install system dependencies for audio processing
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     espeak-ng \
@@ -7,10 +8,15 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Copy and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src/ ./src/
+# Copy source code (only the files we need)
+COPY src/main.py ./src/
+COPY src/analyze.py ./src/
+COPY src/utils.py ./src/
+COPY src/config.py ./src/
 
 ENV PYTHONPATH=/app/src
 

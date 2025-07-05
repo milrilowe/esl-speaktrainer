@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="SpeakTrainer ML Service",
-    description="Audio analysis and pronunciation scoring",
+    description="Audio analysis and pronunciation scoring - Pure ML, no database",
     version="1.0.0"
 )
 
@@ -27,7 +27,11 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"service": "SpeakTrainer ML", "version": "1.0.0"}
+    return {
+        "service": "SpeakTrainer ML", 
+        "version": "1.0.0",
+        "description": "Pure ML service for audio analysis - no database operations"
+    }
 
 @app.get("/health")
 async def health_check():
@@ -40,11 +44,21 @@ async def analyze_pronunciation(
 ):
     """
     Analyze pronunciation by comparing expected text with audio transcription.
-    This is a pure ML endpoint that your Go API will call.
+    This is a pure ML endpoint - no database operations.
     """
-    # Validate audio file
-    if not audio_file.content_type or not audio_file.content_type.startswith('audio/'):
-        raise HTTPException(status_code=400, detail="File must be an audio file")
+    # Validate audio file (relaxed for debugging)
+    logger.info(f"Received file: {audio_file.filename}, content_type: {audio_file.content_type}")
+    
+    # Allow common audio file extensions even if MIME type is wrong
+    allowed_extensions = ['.wav', '.mp3', '.m4a', '.ogg', '.flac', '.webm']
+    file_extension = audio_file.filename.lower().split('.')[-1] if audio_file.filename and '.' in audio_file.filename else ''
+    
+    if audio_file.content_type and not audio_file.content_type.startswith('audio/'):
+        if f'.{file_extension}' not in allowed_extensions:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"File must be an audio file. Got content_type: {audio_file.content_type}, filename: {audio_file.filename}"
+            )
     
     temp_file = None
     try:
@@ -79,9 +93,21 @@ async def transcribe_audio(
 ):
     """
     Just transcribe audio to text (separate endpoint for flexibility).
+    Pure ML operation - no database.
     """
-    if not audio_file.content_type or not audio_file.content_type.startswith('audio/'):
-        raise HTTPException(status_code=400, detail="File must be an audio file")
+    # Validate audio file (relaxed for debugging)
+    logger.info(f"Received file: {audio_file.filename}, content_type: {audio_file.content_type}")
+    
+    # Allow common audio file extensions even if MIME type is wrong
+    allowed_extensions = ['.wav', '.mp3', '.m4a', '.ogg', '.flac', '.webm']
+    file_extension = audio_file.filename.lower().split('.')[-1] if audio_file.filename and '.' in audio_file.filename else ''
+    
+    if audio_file.content_type and not audio_file.content_type.startswith('audio/'):
+        if f'.{file_extension}' not in allowed_extensions:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"File must be an audio file. Got content_type: {audio_file.content_type}, filename: {audio_file.filename}"
+            )
     
     temp_file = None
     try:
