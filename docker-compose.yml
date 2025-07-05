@@ -15,7 +15,7 @@ services:
       context: ./ml
       dockerfile: Dockerfile
     ports:
-      - "8001:8001"  # Expose ML service port
+      - "8001:8001"
     volumes:
       - ./ml/src:/app/src
     environment:
@@ -32,17 +32,18 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://speak:speakpass@db:5432/speaktrainer
-      ML_SERVICE_URL: http://ml-service:8001  # Use container name
+      ML_SERVICE_URL: http://ml-service:8001
       ENVIRONMENT: development
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
 
-  # web:
-  #   build: ./web
-  #   depends_on:
-  #     - api
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     REACT_APP_API_URL: http://localhost:8000  # This is correct for browser
+  web:
+    build: ./web
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_URL: http://localhost:8000
 
 volumes:
   pgdata:
