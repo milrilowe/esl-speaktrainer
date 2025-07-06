@@ -3,12 +3,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { AnalysisResults } from "./components";
 import { PromptSelector } from "./components/PromptSelector";
+import { RecordingInterface } from "./components/RecordingInterface";
 import type { Prompt } from "@/types";
 
 export default function PronunciationAnalyzer() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [customText, setCustomText] = useState<string>('');
+  const [recordedFile, setRecordedFile] = useState<File | null>(null);
 
   // Random prompt query
   const randomPromptQuery = useQuery({
@@ -35,36 +36,25 @@ export default function PronunciationAnalyzer() {
       analyzeAudio(file, expectedText),
   });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Basic validation
-      if (!file.type.startsWith('audio/')) {
-        alert('Please select an audio file');
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        alert('File size must be less than 10MB');
-        return;
-      }
-      setSelectedFile(file);
-    }
+  const handleRecordingComplete = (audioFile: File) => {
+    setRecordedFile(audioFile);
+    // Don't auto-submit anymore - let user play back and verify first
   };
 
   const handleAnalyze = () => {
-    if (!selectedFile || !selectedPrompt) {
-      alert('Please select both an audio file and a prompt');
+    if (!recordedFile || !selectedPrompt) {
+      alert('Please record your pronunciation first');
       return;
     }
 
     analysisMutation.mutate({
-      file: selectedFile,
+      file: recordedFile,
       expectedText: selectedPrompt.text
     });
   };
 
   const handleReset = () => {
-    setSelectedFile(null);
+    setRecordedFile(null);
     setCustomText('');
     analysisMutation.reset();
     // Don't reset the prompt - keep it for next attempt
@@ -72,10 +62,16 @@ export default function PronunciationAnalyzer() {
 
   const handleRandomPrompt = () => {
     randomPromptQuery.refetch();
+    // Clear any previous recording/analysis when getting new prompt
+    setRecordedFile(null);
+    analysisMutation.reset();
   };
 
   const handlePromptSelect = (prompt: Prompt) => {
     setSelectedPrompt(prompt);
+    // Clear any previous recording/analysis when changing prompt
+    setRecordedFile(null);
+    analysisMutation.reset();
   };
 
   const handleCustomTextChange = (text: string) => {
@@ -128,51 +124,44 @@ export default function PronunciationAnalyzer() {
               />
             </div>
 
-            {/* File Upload - Only show if we have a prompt */}
+            {/* Recording Interface - Only show if we have a prompt */}
             {selectedPrompt && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload your audio recording:
-                </label>
-                <input
-                  type="file"
-                  accept="audio/*"
-                  onChange={handleFileChange}
-                  disabled={analysisMutation.isPending}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
-                {selectedFile && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                  </div>
-                )}
-              </div>
+              <RecordingInterface
+                onRecordingComplete={handleRecordingComplete}
+                isAnalyzing={analysisMutation.isPending}
+                disabled={false}
+              />
             )}
 
-            {/* Actions - Only show if we have both prompt and file */}
-            {selectedPrompt && selectedFile && (
-              <div className="flex gap-4">
+            {/* Analyze Button - Only show if we have a recording */}
+            {recordedFile && selectedPrompt && !analysisMutation.data && (
+              <div className="flex justify-center">
                 <button
                   onClick={handleAnalyze}
                   disabled={analysisMutation.isPending}
-                  className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  className="bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
                   {analysisMutation.isPending ? (
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Analyzing...
                     </div>
                   ) : (
-                    'Analyze Pronunciation'
+                    'Analyze My Pronunciation'
                   )}
                 </button>
-                
+              </div>
+            )}
+
+            {/* Reset Button - Only show if we have results or are analyzing */}
+            {(analysisMutation.data || analysisMutation.isPending || recordedFile) && (
+              <div className="flex justify-center">
                 <button
                   onClick={handleReset}
                   disabled={analysisMutation.isPending}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
                 >
-                  Reset
+                  Start Over
                 </button>
               </div>
             )}
