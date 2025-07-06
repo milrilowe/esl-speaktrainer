@@ -35,7 +35,7 @@ export function PromptSelector({
 
   const handleCustomTextSubmit = () => {
     if (customText.trim()) {
-      // Create a temporary prompt object for custom text
+      // Create a simple prompt object for custom text
       const customPrompt: Prompt = {
         id: 'custom',
         text: customText.trim(),

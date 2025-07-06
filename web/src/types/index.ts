@@ -7,7 +7,7 @@ export interface Prompt {
 
 export interface AnalysisResult {
   session_id: string;
-  prompt: Prompt;
+  expected_text: string;
   transcription: string;
   score: number;
   expected_phonemes: string;

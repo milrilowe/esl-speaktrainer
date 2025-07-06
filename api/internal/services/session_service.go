@@ -21,31 +21,21 @@ func NewSessionService(db *gorm.DB, mlClient *MLClient) *SessionService {
 }
 
 type CreateSessionRequest struct {
-	PromptID  string
-	UserID    *string
-	AudioData []byte
-	Filename  string
+	ExpectedText string
+	UserID       *string
+	AudioData    []byte
+	Filename     string
 }
 
 type SessionAnalysisResult struct {
-	Session         *models.Session  `json:"session"`
-	Prompt          *models.Prompt   `json:"prompt"`
+	Session         *models.Session   `json:"session"`
 	AnalysisDetails *AnalysisResponse `json:"analysis_details"`
 }
 
 func (s *SessionService) AnalyzePronunciation(req CreateSessionRequest) (*SessionAnalysisResult, error) {
-	// 1. Get the prompt
-	var prompt models.Prompt
-	if err := s.db.First(&prompt, "id = ?", req.PromptID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, fmt.Errorf("prompt not found")
-		}
-		return nil, fmt.Errorf("failed to fetch prompt: %w", err)
-	}
-
-	// 2. Call ML service for analysis
+	// 1. Call ML service for analysis directly with expected text
 	analysisReq := AnalysisRequest{
-		ExpectedText: prompt.Text,
+		ExpectedText: req.ExpectedText,
 		AudioData:    req.AudioData,
 		Filename:     req.Filename,
 	}
@@ -55,10 +45,10 @@ func (s *SessionService) AnalyzePronunciation(req CreateSessionRequest) (*Sessio
 		return nil, fmt.Errorf("ML analysis failed: %w", err)
 	}
 
-	// 3. Create session record
+	// 2. Create session record - just store the expected text directly
 	session := &models.Session{
 		ID:            uuid.New().String(),
-		PromptID:      req.PromptID,
+		ExpectedText:  req.ExpectedText, // Store text directly, no prompt reference
 		UserID:        req.UserID,
 		Transcription: analysisResp.Transcription,
 		Score:         analysisResp.Score,
@@ -74,10 +64,9 @@ func (s *SessionService) AnalyzePronunciation(req CreateSessionRequest) (*Sessio
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	// 4. Return complete result
+	// 3. Return complete result
 	return &SessionAnalysisResult{
 		Session:         session,
-		Prompt:          &prompt,
 		AnalysisDetails: analysisResp,
 	}, nil
 }

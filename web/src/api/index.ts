@@ -26,10 +26,27 @@ export const fetchRandomPrompt = async (): Promise<Prompt> => {
   };
 };
 
-export const analyzeAudio = async (audioFile: File, promptId: string): Promise<AnalysisResult> => {
+// New function to create custom prompt
+export const createCustomPrompt = async (text: string): Promise<Prompt> => {
+  const response = await fetch(`${API_BASE_URL}/prompts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ text }),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to create custom prompt');
+  }
+  
+  return response.json();
+};
+
+export const analyzeAudio = async (audioFile: File, expectedText: string): Promise<AnalysisResult> => {
   const formData = new FormData();
   formData.append('audio_file', audioFile);
-  formData.append('prompt_id', promptId);
+  formData.append('expected_text', expectedText);
 
   const response = await fetch(`${API_BASE_URL}/sessions/analyze`, {
     method: 'POST',

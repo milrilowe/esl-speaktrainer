@@ -1,7 +1,8 @@
 import { analyzeAudio, fetchRandomPrompt } from "@/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { AnalysisResults, PromptSelector } from "./components";
+import { AnalysisResults } from "./components";
+import { PromptSelector } from "./components/PromptSelector";
 import type { Prompt } from "@/types";
 
 export default function PronunciationAnalyzer() {
@@ -30,8 +31,8 @@ export default function PronunciationAnalyzer() {
 
   // Analysis mutation
   const analysisMutation = useMutation({
-    mutationFn: ({ file, promptId }: { file: File; promptId: string }) => 
-      analyzeAudio(file, promptId),
+    mutationFn: ({ file, expectedText }: { file: File; expectedText: string }) => 
+      analyzeAudio(file, expectedText),
   });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +59,7 @@ export default function PronunciationAnalyzer() {
 
     analysisMutation.mutate({
       file: selectedFile,
-      promptId: selectedPrompt.id
+      expectedText: selectedPrompt.text
     });
   };
 

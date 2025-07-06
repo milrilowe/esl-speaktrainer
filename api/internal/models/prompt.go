@@ -13,16 +13,13 @@ type Prompt struct {
 
 type Session struct {
 	ID           string                 `json:"id" gorm:"primaryKey"`
-	PromptID     string                 `json:"prompt_id" gorm:"not null"`
+	ExpectedText string                 `json:"expected_text" gorm:"not null"`
 	UserID       *string                `json:"user_id,omitempty"`
 	Transcription string                `json:"transcription" gorm:"not null"`
 	Score        int                    `json:"score" gorm:"not null"`
 	AnalysisData map[string]interface{} `json:"analysis_data" gorm:"type:jsonb"`
 	CreatedAt    time.Time              `json:"created_at"`
 	UpdatedAt    time.Time              `json:"updated_at"`
-	
-	// Associations
-	Prompt *Prompt `json:"prompt,omitempty" gorm:"foreignKey:PromptID"`
 }
 
 type User struct {

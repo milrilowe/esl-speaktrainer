@@ -19,10 +19,10 @@ func NewSessionHandler(sessionService *services.SessionService) *SessionHandler 
 }
 
 func (h *SessionHandler) AnalyzePronunciation(c *gin.Context) {
-	// Get form data
-	promptID := c.PostForm("prompt_id")
-	if promptID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "prompt_id is required"})
+	// Get form data - just need expected_text now
+	expectedText := c.PostForm("expected_text")
+	if expectedText == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "expected_text is required"})
 		return
 	}
 
@@ -47,12 +47,12 @@ func (h *SessionHandler) AnalyzePronunciation(c *gin.Context) {
 		userID = &uid
 	}
 
-	// Create session request
+	// Create session request - no more prompt lookup needed
 	req := services.CreateSessionRequest{
-		PromptID:  promptID,
-		UserID:    userID,
-		AudioData: audioData,
-		Filename:  header.Filename,
+		ExpectedText: expectedText,
+		UserID:       userID,
+		AudioData:    audioData,
+		Filename:     header.Filename,
 	}
 
 	// Analyze pronunciation
@@ -65,7 +65,7 @@ func (h *SessionHandler) AnalyzePronunciation(c *gin.Context) {
 	// Return complete analysis result
 	c.JSON(http.StatusOK, gin.H{
 		"session_id":         result.Session.ID,
-		"prompt":             result.Prompt,
+		"expected_text":      result.Session.ExpectedText,
 		"transcription":      result.Session.Transcription,
 		"score":              result.Session.Score,
 		"expected_phonemes":  result.AnalysisDetails.ExpectedPhonemes,

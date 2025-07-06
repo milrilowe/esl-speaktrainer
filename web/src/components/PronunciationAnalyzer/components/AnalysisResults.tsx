@@ -43,7 +43,7 @@ export function AnalysisResults({ result }: Props) {
         <div>
           <h3 className="font-semibold text-gray-700 mb-2">Expected Text</h3>
           <div className="p-3 bg-blue-50 rounded border text-gray-800">
-            "{result.prompt.text}"
+            "{result.expected_text}"
           </div>
         </div>
         <div>
