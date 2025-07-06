@@ -291,7 +291,7 @@ export function RecordingInterface({
         return (
           <div className="flex items-center justify-center">
             <span className="text-2xl mr-2">🎤</span>
-            Start Practice
+            Start Recording
           </div>
         );
       
@@ -307,12 +307,12 @@ export function RecordingInterface({
         return (
           <div className="flex items-center justify-center">
             <span className="text-2xl mr-2">✅</span>
-            Submit Recording
+            Ready to Analyze
           </div>
         );
       
       default:
-        return 'Start Practice';
+        return 'Start Recording';
     }
   };
 
@@ -320,7 +320,7 @@ export function RecordingInterface({
     const baseClass = "w-full py-4 px-6 rounded-lg font-semibold transition-colors text-lg";
     
     if (disabled || isAnalyzing) {
-      return `${baseClass} bg-gray-400 text-white cursor-not-allowed`;
+      return `${baseClass} bg-gray-600 text-gray-400 cursor-not-allowed`;
     }
 
     switch (recordingState) {
@@ -328,7 +328,7 @@ export function RecordingInterface({
         return `${baseClass} bg-blue-600 text-white hover:bg-blue-700`;
       
       case 'recording':
-        return `${baseClass} bg-red-600 text-white hover:bg-red-700 animate-pulse`;
+        return `${baseClass} bg-red-600 text-white hover:bg-red-700`;
       
       case 'stopped':
         return `${baseClass} bg-green-600 text-white hover:bg-green-700`;
@@ -359,102 +359,91 @@ export function RecordingInterface({
 
   return (
     <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          Record your pronunciation:
-        </label>
-        
-        <button
-          onClick={handleButtonClick}
-          disabled={disabled || isAnalyzing}
-          className={getButtonClass()}
-        >
-          {getButtonContent()}
-        </button>
+      <button
+        onClick={handleButtonClick}
+        disabled={disabled || isAnalyzing}
+        className={getButtonClass()}
+      >
+        {getButtonContent()}
+      </button>
 
-        {/* Recording status */}
-        {recordingState === 'recording' && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center text-red-700">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-2"></div>
+      {/* Recording status */}
+      {recordingState === 'recording' && (
+        <div className="p-3 bg-red-900 border border-red-700 rounded-lg">
+          <div className="flex items-center text-red-300">
+            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-2"></div>
+            <span className="text-sm font-medium">
+              Recording... {formatTime(recordingTime)}
+            </span>
+          </div>
+          <div className="text-xs text-red-400 mt-1">
+            Speak clearly and click "Stop Recording" when done
+          </div>
+        </div>
+      )}
+
+      {/* Completed recording */}
+      {recordingState === 'stopped' && !isAnalyzing && (
+        <div className="p-3 bg-green-900 border border-green-700 rounded-lg">
+          <div className="flex items-center justify-between text-green-300 mb-3">
+            <div className="flex items-center">
+              <span className="text-lg mr-2">✅</span>
               <span className="text-sm font-medium">
-                Recording... {formatTime(recordingTime)}
+                Recording complete ({formatTime(recordingTime)})
               </span>
             </div>
-            <div className="text-xs text-red-600 mt-1">
-              Click "Stop Recording" when you're done speaking
-            </div>
-          </div>
-        )}
-
-        {/* Completed recording */}
-        {recordingState === 'stopped' && !isAnalyzing && (
-          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center justify-between text-green-700 mb-3">
-              <div className="flex items-center">
-                <span className="text-lg mr-2">✅</span>
-                <span className="text-sm font-medium">
-                  Recording complete ({formatTime(recordingTime)})
-                </span>
-              </div>
-              <button
-                onClick={resetRecording}
-                className="text-xs text-green-600 underline hover:no-underline"
-              >
-                Record again
-              </button>
-            </div>
-            
-            {/* Playback controls */}
-            {audioUrl && (
-              <div className="flex items-center gap-2 pt-2 border-t border-green-200">
-                <button
-                  onClick={isPlaying ? stopPlayback : playRecording}
-                  className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200 transition-colors"
-                >
-                  {isPlaying ? (
-                    <>
-                      <span>⏸️</span>
-                      Stop Playback
-                    </>
-                  ) : (
-                    <>
-                      <span>▶️</span>
-                      Play Recording
-                    </>
-                  )}
-                </button>
-                <span className="text-xs text-green-600">
-                  Listen to what was recorded to verify quality
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Error display */}
-        {error && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="text-red-800 font-medium text-sm mb-1">Recording Error</div>
-            <div className="text-red-600 text-xs">{error}</div>
             <button
               onClick={resetRecording}
-              className="mt-2 text-xs text-red-700 underline hover:no-underline"
+              className="text-xs text-green-400 underline hover:no-underline"
             >
-              Try again
+              Record again
             </button>
           </div>
-        )}
-      </div>
+          
+          {/* Playback controls */}
+          {audioUrl && (
+            <div className="flex items-center gap-2 pt-2 border-t border-green-700">
+              <button
+                onClick={isPlaying ? stopPlayback : playRecording}
+                className="flex items-center gap-1 px-3 py-1 bg-green-800 text-green-200 rounded text-xs hover:bg-green-700 transition-colors"
+              >
+                {isPlaying ? (
+                  <>
+                    <span>⏸️</span>
+                    Stop
+                  </>
+                ) : (
+                  <>
+                    <span>▶️</span>
+                    Play
+                  </>
+                )}
+              </button>
+              <span className="text-xs text-green-400">
+                Review your recording
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* Browser compatibility note */}
-      <div className="text-xs text-gray-500 space-y-1">
-        <div>💡 Make sure to allow microphone access when prompted</div>
-        {recordingState === 'stopped' && audioUrl && (
-          <div className="text-blue-600">
-            🔍 Debug: Audio blob created successfully
-          </div>
-        )}
+      {/* Error display */}
+      {error && (
+        <div className="p-3 bg-red-900 border border-red-700 rounded-lg">
+          <div className="text-red-300 font-medium text-sm mb-1">Recording Error</div>
+          <div className="text-red-400 text-xs">{error}</div>
+          <button
+            onClick={resetRecording}
+            className="mt-2 text-xs text-red-300 underline hover:no-underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Tips */}
+      <div className="text-xs text-gray-500 text-center">
+        💡 Make sure to allow microphone access when prompted
       </div>
     </div>
   );
