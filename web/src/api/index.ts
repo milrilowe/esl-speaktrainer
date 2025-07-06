@@ -10,6 +10,22 @@ export const fetchPrompts = async (): Promise<{ prompts: Prompt[] }> => {
   return response.json();
 };
 
+// New function for random prompt
+export const fetchRandomPrompt = async (): Promise<Prompt> => {
+  const response = await fetch(`${API_BASE_URL}/prompts/random`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch random prompt');
+  }
+  const data = await response.json();
+  // The API returns { id, text }, we need to create a full Prompt object
+  return {
+    id: data.id,
+    text: data.text,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+};
+
 export const analyzeAudio = async (audioFile: File, promptId: string): Promise<AnalysisResult> => {
   const formData = new FormData();
   formData.append('audio_file', audioFile);
